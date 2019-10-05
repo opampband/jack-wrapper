@@ -53,14 +53,8 @@ public:
 
     // Register process callback and JACK shutdown callback
     // Do some hacky stuff to be able to register non-static functions.
-    auto processBind = std::bind(&JackClient::process, this,
-                                 std::placeholders::_1, std::placeholders::_2);
-    auto processFp = (JackProcessCallback)(&processBind);
-    jack_set_process_callback(client, processFp, 0);
-    auto shutdownBind =
-        std::bind(&JackClient::jackShutdown, this, std::placeholders::_1);
-    auto shutdownFp = (JackShutdownCallback)(&shutdownBind);
-    jack_on_shutdown(client, shutdownFp, 0);
+    jack_set_process_callback(client, process, 0);
+    jack_on_shutdown(client, jackShutdown, 0);
 
     // Print current sample rate
     std::cout << "Engine sample rate: " << jack_get_sample_rate(client) << "\n";
@@ -130,8 +124,8 @@ public:
   }
 
 private:
-  jack_port_t *inputPort;
-  jack_port_t *outputPort;
+  static jack_port_t *inputPort;
+  static jack_port_t *outputPort;
   jack_client_t *client;
   const char **ports;
   const char *clientName;
@@ -142,8 +136,7 @@ private:
   /**
    * Callback to process audio.
    */
-  virtual int process(jack_nframes_t nframes, void *arg) {
-    std::cout << "process\n";
+  static int process(jack_nframes_t nframes, void *arg) {
     jack_default_audio_sample_t *in, *out;
     in =
         (jack_default_audio_sample_t *)jack_port_get_buffer(inputPort, nframes);
@@ -157,10 +150,14 @@ private:
   /**
    * JACK calls this if server shuts down or server disconnects client.
    */
-  void jackShutdown(void *arg) {
+  static void jackShutdown(void *arg) {
     exit(1);
   }
 };
+
+// Need to declare static members
+jack_port_t *JackClient::inputPort;
+jack_port_t *JackClient::outputPort;
 
 int main () {
   JackClient client("simple");
