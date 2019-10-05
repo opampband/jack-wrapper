@@ -142,7 +142,13 @@ private:
         (jack_default_audio_sample_t *)jack_port_get_buffer(inputPort, nframes);
     out = (jack_default_audio_sample_t *)jack_port_get_buffer(outputPort,
                                                               nframes);
-    memcpy(out, in, sizeof(jack_default_audio_sample_t) * nframes);
+    for (size_t i = 0; i < nframes; ++i) {
+      jack_default_audio_sample_t tmp = in[i];
+      // Creates nonlinear distortion
+      tmp = 3 * tmp * tmp;
+      out[i] = tmp;
+    }
+    //memcpy(out, in, sizeof(jack_default_audio_sample_t) * nframes);
 
     return 0;
   }
