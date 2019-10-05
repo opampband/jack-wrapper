@@ -160,7 +160,7 @@ jack_port_t *JackClient::inputPort;
 jack_port_t *JackClient::outputPort;
 
 int main () {
-  JackClient client("simple");
+  JackClient client("motherfucking jack client");
   client.open();
   client.run();
   sleep(-1);
