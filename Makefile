@@ -1,5 +1,6 @@
 CC=clang++
+CFLAGS=-Iinclude
 LDFLAGS=-ljack -g
 
 run: main.cpp
-	$(CC) $(LDFLAGS) main.cpp -o run
+	$(CC) $(CFLAGS) $(LDFLAGS) main.cpp -o run
