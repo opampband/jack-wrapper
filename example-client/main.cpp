@@ -2,7 +2,7 @@
  * A simple example demonstrating how to use the JackClient class.
  */
 
-#include <unistd.h>
+#include <unistd.h> // sleep()
 
 #include <jack_wrapper/jack_wrapper.h>
 
