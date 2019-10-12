@@ -119,17 +119,18 @@ public:
   }
 
 private:
+  const char *clientName;
+
+  // Callback function to be invoked when processing a buffer.
+  JackProcessCallback processCallback;
+
   jack_port_t *&inputPort;
   jack_port_t *&outputPort;
   jack_client_t *client;
   const char **ports;
-  const char *clientName;
   const char *serverName;
   jack_options_t options;
   jack_status_t status;
-
-  // Callback function to be invoked when processing a buffer.
-  JackProcessCallback processCallback;
 
   /**
    * JACK calls this if server shuts down or server disconnects client.
