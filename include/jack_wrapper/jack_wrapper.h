@@ -17,9 +17,6 @@ public:
       : clientName(clientName), processCallback(processCallback),
         inputPort(inputPort), outputPort(outputPort),
         midiInputPort(nullptr), midiInput(false) {
-    serverName = nullptr;
-    options = JackNullOption;
-
     // Create a Jack client and connect to the Jack server but do not start
     // processing
     open();
@@ -43,6 +40,9 @@ public:
    * Also registers callback, ports, etc.
    */
   void open() {
+    serverName = nullptr;
+    options = JackNullOption;
+
     client = jack_client_open(clientName, options, &status, serverName);
 
     if (!client) {
