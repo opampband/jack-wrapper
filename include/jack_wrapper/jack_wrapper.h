@@ -14,6 +14,10 @@ public:
         inputPort(inputPort), outputPort(outputPort) {
     serverName = nullptr;
     options = JackNullOption;
+
+    // Create a Jack client and connect to the Jack server but do not start
+    // processing
+    open();
   };
 
   ~JackClient() {
@@ -52,7 +56,13 @@ public:
     jack_on_shutdown(client, jackShutdown, 0);
 
     // Print current sample rate
-    std::cout << "Engine sample rate: " << jack_get_sample_rate(client) << "\n";
+    sampleRate = jack_get_sample_rate(client);
+    std::cout << "Engine sample rate: " << sampleRate << "\n";
+
+    // Print current buffer size
+    // TODO implement a callback to handle buffer size changes
+    bufferSize = jack_get_buffer_size(client);
+    std::cout << "Engine buffer size: " << bufferSize << "\n";
 
     // Register input and output ports
     inputPort = jack_port_register(client, "input", JACK_DEFAULT_AUDIO_TYPE,
@@ -118,6 +128,15 @@ public:
     jack_client_close(client);
   }
 
+  std::size_t getBufferSize() {
+    return bufferSize;
+  }
+
+  std::size_t getSampleRate() {
+    return sampleRate;
+  }
+
+
 private:
   const char *clientName;
 
@@ -131,6 +150,9 @@ private:
   const char *serverName;
   jack_options_t options;
   jack_status_t status;
+
+  std::size_t bufferSize;
+  std::size_t sampleRate;
 
   /**
    * JACK calls this if server shuts down or server disconnects client.
