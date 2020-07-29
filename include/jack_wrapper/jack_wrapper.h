@@ -1,3 +1,6 @@
+#ifndef OPAMP_JACK_WRAPPER_H_
+#define OPAMP_JACK_WRAPPER_H_
+
 #include <cstring>
 #include <iostream>
 
@@ -194,4 +197,6 @@ private:
     exit(1);
   }
 };
+
+#endif
 
