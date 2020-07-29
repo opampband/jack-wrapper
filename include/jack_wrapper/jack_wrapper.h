@@ -8,6 +8,8 @@
  */
 class JackClient {
 public:
+  typedef jack_default_audio_sample_t sample_t;
+
   JackClient(const char *clientName, JackProcessCallback processCallback,
              jack_port_t *&inputPort, jack_port_t *&outputPort)
       : clientName(clientName), processCallback(processCallback),
@@ -136,6 +138,9 @@ public:
     return sampleRate;
   }
 
+  static sample_t *getBuffer(jack_port_t *port, std::size_t nframes) {
+    return (sample_t *)jack_port_get_buffer(port, nframes);
+  }
 
 private:
   const char *clientName;
