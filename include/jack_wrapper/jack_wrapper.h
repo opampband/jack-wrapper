@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <jack/jack.h>
+#include <jack/midiport.h>
 
 /**
  * Wrapper around a Jack client.
@@ -9,16 +10,27 @@
 class JackClient {
 public:
   typedef jack_default_audio_sample_t sample_t;
+  typedef jack_midi_event_t midi_event_t;
 
   JackClient(const char *clientName, JackProcessCallback processCallback,
              jack_port_t *&inputPort, jack_port_t *&outputPort)
       : clientName(clientName), processCallback(processCallback),
-        inputPort(inputPort), outputPort(outputPort) {
+        inputPort(inputPort), outputPort(outputPort),
+        midiInputPort(nullptr), midiInput(false) {
     serverName = nullptr;
     options = JackNullOption;
 
     // Create a Jack client and connect to the Jack server but do not start
     // processing
+    open();
+  };
+
+  JackClient(const char *clientName, JackProcessCallback processCallback,
+             jack_port_t *&inputPort, jack_port_t *&outputPort,
+             jack_port_t **midiInputPort)
+      : clientName(clientName), processCallback(processCallback),
+        inputPort(inputPort), outputPort(outputPort),
+        midiInputPort(midiInputPort), midiInput(true) {
     open();
   };
 
@@ -71,8 +83,12 @@ public:
                                    JackPortIsInput, 0);
     outputPort = jack_port_register(client, "output", JACK_DEFAULT_AUDIO_TYPE,
                                     JackPortIsOutput, 0);
+    if (midiInput) {
+      *midiInputPort = jack_port_register(client, "midi_in",
+        JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    }
 
-    if (!inputPort || !outputPort) {
+    if (!inputPort || !outputPort || !midiInputPort) {
       std::cerr << "No more JACK ports available!\n";
       exit(1);
     }
@@ -142,6 +158,16 @@ public:
     return (sample_t *)jack_port_get_buffer(port, nframes);
   }
 
+  static std::size_t getMidiEventCount(void *portBuffer) {
+    return jack_midi_get_event_count(portBuffer);
+  }
+
+  static midi_event_t getMidiEvent(void *portBuffer, std::size_t eventIndex) {
+    midi_event_t event;
+    jack_midi_event_get(&event, portBuffer, eventIndex);
+    return event;
+  }
+
 private:
   const char *clientName;
 
@@ -150,6 +176,8 @@ private:
 
   jack_port_t *&inputPort;
   jack_port_t *&outputPort;
+  jack_port_t **midiInputPort; // may be null so can't be a reference
+  bool midiInput; // whether or not to create a midi input port
   jack_client_t *client;
   const char **ports;
   const char *serverName;
