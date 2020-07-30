@@ -171,6 +171,18 @@ public:
     return event;
   }
 
+  static bool isNoteOn(midi_event_t event) {
+    return (event.buffer[0] & 0xf0) == 0x90;
+  }
+
+  static bool isNoteOff(midi_event_t event) {
+    return (event.buffer[0] & 0xf0) == 0x80;
+  }
+
+  static uint8_t getMidiNote(midi_event_t event) {
+    return event.buffer[1];
+  }
+
 private:
   const char *clientName;
 
